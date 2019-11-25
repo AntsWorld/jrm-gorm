@@ -2,7 +2,7 @@ package jorm
 
 import (
 	"fmt"
-	"github.com/AntsWorld/jormsample/jdb"
+	"github.com/AntsWorld/jrm-gorm/jdb"
 	"log"
 	"os"
 	"path/filepath"

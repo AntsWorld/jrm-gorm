@@ -58,7 +58,6 @@ var DefaultTableTemplateText = `package {{.BaseTableTemplate.PackageName}}
 
 import (
 	"database/sql"
-	"github.com/AntsWorld/jormsample/jdb"
 )
 
 //数据库名
