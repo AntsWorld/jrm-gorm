@@ -88,25 +88,14 @@ var TableNameOf{{.BaseTableTemplate.TableStructureName}} = "{{.BaseTableTemplate
 {{end}}
 //Query操作，根据主键和唯一键可以做精确查询；根据普通键可以做批量查询；查询需要默认启用分页；需要支持模糊查询；
 {{range $k,$v := .QueryTemplates}}
-	{{if eq $v.UniQuery true}}
-		func {{$v.FunctionName}}(dbConnector *jdb.DBConnector,{{$v.WhereKeyValueParamName}} {{$v.WhereKeyDataType}}) (*{{$v.QueryResultDataType}}, error) {
-			queryResult := {{$v.QueryResultDataType}}{}
-			sqlStatement := "{{$v.SqlStatement}}"
-			if err := dbConnector.ExecuteQuery(sqlStatement,&queryResult,{{$v.WhereKeyValueParamName}});err!=nil{
-				return nil,err
-			}
-			return &queryResult,nil
+	func {{$v.FunctionName}}(dbConnector *jdb.DBConnector,{{$v.WhereKeyValueParamName}} {{$v.WhereKeyDataType}}) ([]{{$v.QueryResultDataType}}, error) {
+		queryResults := make([]{{$v.QueryResultDataType}}, 0)
+		sqlStatement := "{{$v.SqlStatement}}"
+		if err := dbConnector.ExecuteQuery(sqlStatement,&queryResults,{{$v.WhereKeyValueParamName}});err!=nil{
+			return nil,err
 		}
-	{{else}}
-		func {{$v.FunctionName}}(dbConnector *jdb.DBConnector,{{$v.WhereKeyValueParamName}} {{$v.WhereKeyDataType}}) ([]{{$v.QueryResultDataType}}, error) {
-			queryResults := make([]{{$v.QueryResultDataType}}, 0)
-			sqlStatement := "{{$v.SqlStatement}}"
-			if err := dbConnector.ExecuteQuery(sqlStatement,&queryResults,{{$v.WhereKeyValueParamName}});err!=nil{
-				return nil,err
-			}
-			return queryResults,nil
-		}
-	{{end}}
+		return queryResults,nil
+	}
 {{end}}
 //Update操作
 {{range $k,$v := .UpdateTemplates}}
@@ -126,20 +115,26 @@ var TableNameOf{{.BaseTableTemplate.TableStructureName}} = "{{.BaseTableTemplate
 `
 
 ////######################################################################################################################
-////Delete row from a database table by unique key column
-//{{range $k,$v := .DeleteTemplateData.DeleteByUniQKeyTLData}}
-//func DeleteRowFrom{{$v.StructureNameOfTable}}By{{$v.ColumnName}}(dbConnector *jdb.DBConnector,{{$v.JsonTagName}} {{$v.DataType}}) (sql.Result, error) {
-//sql := "DELETE FROM {{$v.DatabaseName}}.{{$v.TableName}} WHERE {{$v.TableColumnName}}=?;"
-//return dbConnector.ExecuteUpdate(sql, {{$v.JsonTagName}})
+//Query操作，根据主键和唯一键可以做精确查询；根据普通键可以做批量查询；查询需要默认启用分页；需要支持模糊查询；
+//{{range $k,$v := .QueryTemplates}}
+//{{if eq $v.UniQuery true}}
+//func {{$v.FunctionName}}(dbConnector *jdb.DBConnector,{{$v.WhereKeyValueParamName}} {{$v.WhereKeyDataType}}) (*{{$v.QueryResultDataType}}, error) {
+//queryResult := {{$v.QueryResultDataType}}{}
+//sqlStatement := "{{$v.SqlStatement}}"
+//if err := dbConnector.ExecuteQuery(sqlStatement,&queryResult,{{$v.WhereKeyValueParamName}});err!=nil{
+//return nil,err
+//}
+//return &queryResult,nil
+//}
+//{{else}}
+//func {{$v.FunctionName}}(dbConnector *jdb.DBConnector,{{$v.WhereKeyValueParamName}} {{$v.WhereKeyDataType}}) ([]{{$v.QueryResultDataType}}, error) {
+//queryResults := make([]{{$v.QueryResultDataType}}, 0)
+//sqlStatement := "{{$v.SqlStatement}}"
+//if err := dbConnector.ExecuteQuery(sqlStatement,&queryResults,{{$v.WhereKeyValueParamName}});err!=nil{
+//return nil,err
+//}
+//return queryResults,nil
 //}
 //{{end}}
-////######################################################################################################################
-////select rows data from a database table by unique key
-//{{range $i, $v := .SelectTemplateData.DeleteByUniQKeyTLData}}
-//func SelectRowsFrom{{$v.StructureNameOfTable}}By{{$v.ColumnName}}(dbConnector *jdb.DBConnector,result []{{$v.StructureNameOfTable}},{{$v.JsonTagName}} {{$v.DataType}}) error {
-//sql := "SELECT * FROM {{$v.DatabaseName}}.{{$v.TableName}} WHERE {{$v.TableColumnName}}=?;"
-//return dbConnector.ExecuteQuery(sql,result, {{$v.JsonTagName}})
-//}
 //{{end}}
 ////######################################################################################################################
-////update
