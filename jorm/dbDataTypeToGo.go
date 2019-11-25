@@ -1,0 +1,51 @@
+package jorm
+
+//mysql数据类型映射到GO
+var MysqlDataTypeMapToGoDataType = map[string]string{
+	"BIT":                       "int", //数字类型
+	"TINYINT":                   "int",
+	"BOOL":                      "int",
+	"BOOLEAN":                   "int",
+	"SMALLINT":                  "int",
+	"MEDIUMINT":                 "int",
+	"INT":                       "int",
+	"INTEGER":                   "int",
+	"BIGINT":                    "int64",
+	"DECIMAL":                   "int64",
+	"DEC":                       "int",
+	"FLOAT":                     "float32",
+	"DOUBLE":                    "float64",
+	"DOUBLE PRECISION":          "float64",
+	"UNSIGNED BIT":              "uint", //这里是自己组装的无符号数据类型
+	"UNSIGNED TINYINT":          "uint",
+	"UNSIGNED BOOL":             "uint",
+	"UNSIGNED BOOLEAN":          "uint",
+	"UNSIGNED SMALLINT":         "uint",
+	"UNSIGNED MEDIUMINT":        "uint",
+	"UNSIGNED INT":              "uint",
+	"UNSIGNED INTEGER":          "uint",
+	"UNSIGNED BIGINT":           "uint64",
+	"UNSIGNED DECIMAL":          "uint64",
+	"UNSIGNED DEC":              "uint",
+	"UNSIGNED FLOAT":            "float32",
+	"UNSIGNED DOUBLE":           "float64",
+	"UNSIGNED DOUBLE PRECISION": "float64",
+	"DATE":                      "string", //日期时间类型
+	"DATETIME":                  "string",
+	"TIMESTAMP":                 "string",
+	"TIME":                      "string",
+	"YEAR":                      "string",
+	"CHAR":                      "string", //字符串类型
+	"VARCHAR":                   "string",
+	"BINARY":                    "string",
+	"VARBINARY":                 "string",
+	"TINYBLOB":                  "string",
+	"TINYTEXT":                  "string",
+	"BLOB":                      "string",
+	"TEXT":                      "string",
+	"MEDIUMBLOB":                "string",
+	"MEDIUMTEXT":                "string",
+	"LONGBLOB":                  "string",
+	"LONGTEXT":                  "string",
+	"ENUM":                      "string",
+	"SET":                       "string"}
