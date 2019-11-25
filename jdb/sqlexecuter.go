@@ -55,10 +55,6 @@ func (sqlExecutor *SqlExecutor) ExecuteSelectSql(sqlStatement string, v interfac
 		log.Println(err)
 		return err
 	}
-	if len(data) == 0 {
-		//未查询到数据
-		return errors.New("未查询到数据")
-	}
 	//log.Println(data)
 	if err := ReflectSelectSqlMapResultToStructure(data, v, sqlExecutor.StructureOrmTagName); err != nil {
 		return err
@@ -152,6 +148,10 @@ func ReflectSelectSqlMapResultToStructure(data []map[string]string, v interface{
 	//判断数据是否为空
 	if nil == data || len(data) == 0 {
 		log.Println(errors.New("data can't be nil"))
+		return nil
+	}
+	if len(data) == 0 {
+		log.Println(errors.New("data can't be empty"))
 		return nil
 	}
 	if v == nil {

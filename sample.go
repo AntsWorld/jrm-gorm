@@ -1,7 +1,9 @@
 package main
 
-import "log"
+import (
+	"github.com/AntsWorld/jrm-gorm/codeGenerator"
+)
 
 func main() {
-	log.Println("main")
+	codeGenerator.GenerateCode()
 }
