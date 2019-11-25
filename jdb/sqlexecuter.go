@@ -145,8 +145,8 @@ func (sqlExecutor *SqlExecutor) ExecuteSelectSqlForRows(sqlStatement string, arg
 
 //将查询语句得到的[]Map结果反射到结构体中
 func ReflectSelectSqlMapResultToStructure(data []map[string]string, v interface{}, tagName string) error {
-	//判断数据是否为空
-	if nil == data || len(data) == 0 {
+	//判断数据是否为空,如果数据为空表示未查询到数据，不返回错误
+	if nil == data {
 		log.Println(errors.New("data can't be nil"))
 		return nil
 	}
