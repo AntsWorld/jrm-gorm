@@ -9,6 +9,10 @@ import (
 	"text/template"
 )
 
+func init() {
+
+}
+
 type JrOrm struct {
 	DBConnector *jdb.DBConnector
 }
