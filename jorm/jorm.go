@@ -10,7 +10,6 @@ import (
 )
 
 func init() {
-
 }
 
 type JrOrm struct {
@@ -75,7 +74,7 @@ func (orm *JrOrm) GenerateTemplateFile(text string, templateData interface{}, fi
 		return err
 	}
 	//解析模板
-	tmpl, err := template.New("apiDoc").Parse(text)
+	tmpl, err := template.New("CodeTemplate").Parse(text)
 	if err != nil {
 		return err
 	}

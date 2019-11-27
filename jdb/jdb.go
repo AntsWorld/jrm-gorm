@@ -8,8 +8,8 @@ import (
 //######################################################################################################################
 //数据库连接器
 type DBConnector struct {
-	DB         *sql.DB
-	OrmTagName string
+	DB *sql.DB
+	//OrmTagName string
 }
 
 //新建数据库连接器
@@ -37,19 +37,19 @@ func (connector *DBConnector) ExecuteUpdate(sqlStatement string, args ...interfa
 
 //执行查询语句
 func (connector *DBConnector) ExecuteQuery(sqlStatement string, v interface{}, args ...interface{}) error {
-	var sqlExecutor = SqlExecutor{DB: connector.DB, StructureOrmTagName: connector.OrmTagName}
+	var sqlExecutor = SqlExecutor{DB: connector.DB}
 	return sqlExecutor.ExecuteSelectSql(sqlStatement, v, args...)
 }
 
 //执行查询语句并返回Rows
 func (connector *DBConnector) ExecuteQueryForRows(sqlStatement string, args ...interface{}) (*sql.Rows, error) {
-	var sqlExecutor = SqlExecutor{DB: connector.DB, StructureOrmTagName: connector.OrmTagName}
+	var sqlExecutor = SqlExecutor{DB: connector.DB}
 	return sqlExecutor.ExecuteSelectSqlForRows(sqlStatement, args...)
 }
 
 //执行查询语句并返回[]map[string]string
 func (connector *DBConnector) ExecuteQueryForKeyValueMap(sqlStatement string, args ...interface{}) ([]map[string]string, error) {
-	var sqlExecutor = SqlExecutor{DB: connector.DB, StructureOrmTagName: connector.OrmTagName}
+	var sqlExecutor = SqlExecutor{DB: connector.DB}
 	return sqlExecutor.ExecuteSelectSqlForMapResult(sqlStatement, args...)
 }
 

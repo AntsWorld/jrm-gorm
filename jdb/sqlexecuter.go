@@ -16,8 +16,8 @@ func init() {
 }
 
 type SqlExecutor struct {
-	DB                  *sql.DB
-	StructureOrmTagName string
+	DB *sql.DB
+	//StructureOrmTagName string
 }
 
 //执行非查询SQL语句(增、删、改)
@@ -47,16 +47,14 @@ func (sqlExecutor *SqlExecutor) ExecuteNonSelectSql(sqlStatement string, args ..
 
 //执行查询SQL语句
 func (sqlExecutor *SqlExecutor) ExecuteSelectSql(sqlStatement string, v interface{}, args ...interface{}) error {
-	if sqlExecutor.StructureOrmTagName == "" {
-		return errors.New("tag name can't be empty")
-	}
 	data, err := sqlExecutor.ExecuteSelectSqlForMapResult(sqlStatement, args...)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 	//log.Println(data)
-	if err := ReflectSelectSqlMapResultToStructure(data, v, sqlExecutor.StructureOrmTagName); err != nil {
+	ormTagName := "orm"
+	if err := ReflectSelectSqlMapResultToStructure(data, v, ormTagName); err != nil {
 		return err
 	}
 	return nil
