@@ -43,10 +43,11 @@ func (orm *JrOrm) QuerySchemaInfo(databaseName string, schemaInfo *SchemaInfo) e
 
 //查询数据库表信息
 func (orm *JrOrm) QuerySchemaTableInfo(schemaTable SchemaTable, schemaTableInfo *SchemaTableInfo) error {
+	tableSchema := schemaTable.TableSchema
 	tableName := schemaTable.TableName
-	sqlStatement := "select * from information_schema.columns where table_name =?;"
+	sqlStatement := "select * from information_schema.columns where table_schema = ? and table_name =?;"
 	var schemaTableColumns []SchemaTableColumns
-	if err := orm.DBConnector.ExecuteQuery(sqlStatement, &schemaTableColumns, tableName); err != nil {
+	if err := orm.DBConnector.ExecuteQuery(sqlStatement, &schemaTableColumns, tableSchema, tableName); err != nil {
 		return err
 	}
 	schemaTableInfo.TableColumns = schemaTableColumns
