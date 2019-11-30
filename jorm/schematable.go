@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+func init() {
+	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
+}
+
 //数据库表中列的元数据
 type SchemaTableColumns struct {
 	TableCatalog           string `json:"tableCatalog" orm:"TABLE_CATALOG"`                      //表限定符
@@ -33,28 +37,83 @@ type SchemaTableColumns struct {
 	GenerationExpression   string `json:"generationExpression" orm:"GENERATION_EXPRESSION"`
 }
 
+//表中列信息描述
+type LocalSchemaTableColumns struct {
+	SchemaTableColumns SchemaTableColumns
+	CamelColumnName    string `json:"camelColumnName"`    //列名的驼峰格式
+	ColumnDefaultValue string `json:"columnDefaultValue"` //默认值
+	Nullable           bool   `json:"nullable"`           //是否可以为空
+	GoDataType         string `json:"goDataType"`         //数据类型
+}
+
+func (tableInfo *SchemaTableInfo) ConvertTableColumnsToLocalTableColumns(tableColumns []SchemaTableColumns) ([]LocalSchemaTableColumns, error) {
+	if tableInfo == nil {
+		return nil, errors.New("schemaTableInfo can't be nil")
+	}
+	if tableColumns == nil || len(tableColumns) == 0 {
+		return nil, errors.New("tableColumns can't be nil")
+	}
+	localSchemaTableColumns := make([]LocalSchemaTableColumns, 0)
+	for _, tableColumn := range tableColumns {
+		localTableColumn := LocalSchemaTableColumns{}
+		localTableColumn.SchemaTableColumns = tableColumn
+		//获取
+		localTableColumn.CamelColumnName = tableInfo.FmtColumnsNameToCamelName(tableColumn.ColumnName)
+
+		if tableColumn.IsNullable == "NO" {
+			localTableColumn.Nullable = false
+		} else {
+			localTableColumn.Nullable = true
+		}
+		localTableColumn.GoDataType = tableInfo.MappingMysqlDataTypeToGo(tableColumn.DataType, tableColumn.ColumnType)
+		switch localTableColumn.GoDataType {
+		case "int", "int64", "uint", "uint64", "float32", "float64":
+			if tableColumn.ColumnDefault != "" {
+				localTableColumn.ColumnDefaultValue = tableColumn.ColumnDefault
+			} else {
+				localTableColumn.ColumnDefaultValue = "0"
+			}
+		case "string":
+			if tableColumn.ColumnDefault != "" {
+				localTableColumn.ColumnDefaultValue = fmt.Sprintf("\"%s\"", tableColumn.ColumnDefault)
+			} else {
+				localTableColumn.ColumnDefaultValue = fmt.Sprintf("\"\"")
+			}
+		case "bool":
+			if tableColumn.ColumnDefault == "1" {
+				localTableColumn.ColumnDefaultValue = "true"
+			} else {
+				localTableColumn.ColumnDefaultValue = "false"
+			}
+		default:
+			return nil, errors.New(fmt.Sprintf("unsupported datatype: %s", localTableColumn.GoDataType))
+		}
+		localSchemaTableColumns = append(localSchemaTableColumns, localTableColumn)
+	}
+
+	return localSchemaTableColumns, nil
+}
+
 //数据库表信息
 type SchemaTableInfo struct {
 	SchemaTable  SchemaTable          `json:"schemaTable"`
 	TableColumns []SchemaTableColumns `json:"tableColumns"`
-	//BaseTableTemplate BaseTableTemplate    `json:"baseTableTemplate,omitempty"`
-	//DefaultTableTemplate DefaultTableTemplate `json:"defaultTableTemplate,omitempty"`
 }
 
 //基础表模板数据
 type BaseTableTemplate struct {
-	DatabaseName    string               //数据库名称
-	TableName       string               //表名称
-	AIColumns       []SchemaTableColumns //表中所有自增字段
-	PriColumns      []SchemaTableColumns //表中所有PRI字段
-	UniqueColumns   []SchemaTableColumns //表中所有Unique字段
-	EditableColumns []SchemaTableColumns //表中所有可编辑字段,插入和更新SQL语句使用
-	//PackageName        string               //包名,默认用数据库名称转驼峰式命名
-	//GoFileName         string               //生成的Go文件名,默认使用表名称的驼峰格式并且首字母小写
-	//GoTestFileName     string               //生成的Go测试文件名
-	TableStructureName string //表结构体名称,默认使用表名称的驼峰格式
+	DatabaseName               string               //数据库名称
+	TableName                  string               //表名称
+	AIColumns                  []SchemaTableColumns //表中所有自增字段
+	PriColumns                 []SchemaTableColumns //表中所有PRI字段
+	UniqueColumns              []SchemaTableColumns //表中所有Unique字段
+	EditableColumns            []SchemaTableColumns //表中所有可编辑字段,插入和更新SQL语句使用
+	TableStructureName         string               //表结构体名称,默认使用表名称的驼峰格式
+	InsertRequestStructureName string               //Insert请求结构体名称
+	UpdateRequestStructureName string               //Update请求结构体名称
 }
 
+//获取数据库名称
 func (tableInfo *SchemaTableInfo) GetDatabaseName() (string, error) {
 	if tableInfo == nil {
 		return "", errors.New("tableInfo ptr can't be nil")
@@ -69,6 +128,7 @@ func (tableInfo *SchemaTableInfo) GetDatabaseName() (string, error) {
 	return firstColumn.TableSchema, nil
 }
 
+//获取表名称
 func (tableInfo *SchemaTableInfo) GetTableName() (string, error) {
 	if tableInfo == nil {
 		return "", errors.New("tableInfo ptr can't be nil")
@@ -83,6 +143,7 @@ func (tableInfo *SchemaTableInfo) GetTableName() (string, error) {
 	return firstColumn.TableName, nil
 }
 
+//获取表中自增字段
 func (tableInfo *SchemaTableInfo) GetAutoIncrementColumns() ([]SchemaTableColumns, error) {
 	if tableInfo == nil {
 		return nil, errors.New("tableInfo ptr can't be nil")
@@ -99,6 +160,7 @@ func (tableInfo *SchemaTableInfo) GetAutoIncrementColumns() ([]SchemaTableColumn
 	return autoIncrementColumns, nil
 }
 
+//获取表中主键字段
 func (tableInfo *SchemaTableInfo) GetPrimaryKeyColumns() ([]SchemaTableColumns, error) {
 	if tableInfo == nil {
 		return nil, errors.New("tableInfo ptr can't be nil")
@@ -132,6 +194,7 @@ func (tableInfo *SchemaTableInfo) GetUniqueColumns() ([]SchemaTableColumns, erro
 	return uniqueColumns, nil
 }
 
+//获取表中可编辑字段
 func (tableInfo *SchemaTableInfo) GetEditableColumns() ([]SchemaTableColumns, error) {
 	if tableInfo == nil {
 		return nil, errors.New("tableInfo ptr can't be nil")
@@ -152,6 +215,7 @@ func (tableInfo *SchemaTableInfo) GetEditableColumns() ([]SchemaTableColumns, er
 	return editableColumns, nil
 }
 
+//根据mysql数据类型获取golang数据类型
 func (tableInfo *SchemaTableInfo) MappingMysqlDataTypeToGo(columnDataType string, columnType string) string {
 	dt := strings.ToUpper(columnDataType)
 	//如果列类型中包含unsigned，表示是无符号类型
@@ -366,6 +430,8 @@ func (tableInfo *SchemaTableInfo) GenerateBaseTableTemplate() (*BaseTableTemplat
 	baseTableTemplate.UniqueColumns = append(baseTableTemplate.UniqueColumns, uniqueColumns...)
 	baseTableTemplate.EditableColumns = append(baseTableTemplate.EditableColumns, editableColumns...)
 	baseTableTemplate.TableStructureName = tableInfo.FmtColumnsNameToCamelName(baseTableTemplate.TableName)
+	baseTableTemplate.InsertRequestStructureName = fmt.Sprintf("Insert%sRequest", baseTableTemplate.TableStructureName)
+	baseTableTemplate.UpdateRequestStructureName = fmt.Sprintf("Update%sRequest", baseTableTemplate.TableStructureName)
 	////生成文件需要的字段
 	//baseTableTemplate.PackageName = fmt.Sprintf("%sdb", strings.ToLower(tableInfo.FmtColumnsNameToCamelName(databaseName)))
 	//baseTableTemplate.GoFileName = fmt.Sprintf("%s.go", strings.ToLower(tableInfo.FmtTableNameToFileName(tableName)))
