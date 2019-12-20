@@ -102,8 +102,9 @@ type SchemaTableInfo struct {
 
 //基础表模板数据
 type BaseTableTemplate struct {
-	DatabaseName               string               //数据库名称
-	TableName                  string               //表名称
+	DatabaseName               string //数据库名称
+	TableName                  string //表名称
+	CamelDatabaseName          string
 	AIColumns                  []SchemaTableColumns //表中所有自增字段
 	PriColumns                 []SchemaTableColumns //表中所有PRI字段
 	UniqueColumns              []SchemaTableColumns //表中所有Unique字段
@@ -424,6 +425,7 @@ func (tableInfo *SchemaTableInfo) GenerateBaseTableTemplate() (*BaseTableTemplat
 
 	baseTableTemplate := BaseTableTemplate{}
 	baseTableTemplate.DatabaseName = databaseName
+	baseTableTemplate.CamelDatabaseName = tableInfo.FmtColumnsNameToCamelName(databaseName)
 	baseTableTemplate.TableName = tableName
 	baseTableTemplate.AIColumns = append(baseTableTemplate.AIColumns, autoIncrementColumns...)
 	baseTableTemplate.PriColumns = append(baseTableTemplate.PriColumns, primaryKeyColumns...)

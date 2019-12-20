@@ -32,7 +32,8 @@ func (orm *JrOrm) Close() error {
 //查询数据库信息
 func (orm *JrOrm) QuerySchemaInfo(databaseName string, schemaInfo *SchemaInfo) error {
 	//查询数据库中所有的表
-	sqlStatement := "select * from information_schema.tables where table_schema=? and table_type='base table';"
+	sqlStatement := "select * from information_schema.tables where table_schema=? and table_type='BASE TABLE';"
+	//sqlStatement := "select * from information_schema.tables where table_schema=?;"
 	var schemaTables []SchemaTable
 	if err := orm.DBConnector.ExecuteQuery(sqlStatement, &schemaTables, databaseName); err != nil {
 		return err
