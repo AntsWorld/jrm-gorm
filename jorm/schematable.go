@@ -425,6 +425,7 @@ func (tableInfo *SchemaTableInfo) GenerateBaseTableTemplate() (*BaseTableTemplat
 
 	baseTableTemplate := BaseTableTemplate{}
 	baseTableTemplate.DatabaseName = databaseName
+	baseTableTemplate.CamelDatabaseName = tableInfo.FmtColumnsNameToCamelName(databaseName)
 	baseTableTemplate.TableName = tableName
 	baseTableTemplate.AIColumns = append(baseTableTemplate.AIColumns, autoIncrementColumns...)
 	baseTableTemplate.PriColumns = append(baseTableTemplate.PriColumns, primaryKeyColumns...)
